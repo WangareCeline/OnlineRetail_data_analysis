@@ -1,159 +1,93 @@
-# OnlineRetail_data_analysis Project Documentation
-## Phase 1 — Data Ingestion Summary
+# Online Retail Data Project - Project Brief
 
-### **Overview**
-This phase focuses on loading and performing initial exploratory analysis on the "Online Retail" dataset stored in an Excel file.
+Hi Team,
 
-### **Steps Performed**
+I hope you’re doing well. We are beginning the next phase of our Online Retail data project, and I need you to carry out a structured workflow that prepares the dataset for high-quality analysis. The main goal is to ensure that the data is reliable, properly validated, and transformed in a way that supports deeper insights for leadership.
 
-#### 1. **Package Installation & Imports**
-- Installed required packages: `sqlalchemy`, `psycopg2-binary`, `pandas`, `matplotlib`, `seaborn`, `numpy`, `python-dotenv`.
-- Imported `pandas` for data manipulation.
+You will be working exclusively with the Online Retail dataset. Before any analysis can begin, the data must be thoroughly cleaned. Once this is done, I would like you to move through the remaining phases of the pipeline—data ingestion, storage, preparation, and analysis. These steps will help us uncover customer behavior patterns, revenue trends, and geographic demand using only this dataset.
 
-#### 2. **Data Loading**
-- Loaded the dataset from `'online_retail.xlsx'` into a DataFrame named `online_retail`.
+Please review the detailed expectations below and let me know if you need clarification before you begin.
 
-#### 3. **Initial Data Exploration**
-- **`.head()`**: Displayed the first few rows to review raw data structure.
-- **`.shape()`**: Checked the dataset's dimensions (rows and columns).
-- **`.describe()`**: Generated descriptive statistics (e.g., mean, std, min/max) for numerical columns.
-- **`.info()`**: Provided a summary of the DataFrame, including column names, data types, and non-null counts.
+## WHAT YOU ARE EXPECTED TO DO
 
-### **Purpose**
-To ingest and perform a preliminary review of the dataset, identifying its structure, size, data types, and basic statistical properties before further analysis.
+### PHASE 1 — DATA INGESTION
+You will begin by bringing the dataset into Python for inspection:
+- Load the Online Retail Excel file using pandas.
+- Review the raw structure using `.head()`, `.shape()`, `.describe()`, and `.info()`.
+- Convert the InvoiceDate column into a proper datetime format.
+- Ensure all text fields (e.g., Country, Description) are correctly typed as string/object.
 
 ---
 
-## Phase 2: Data Storage (SQL Layer) Summary
+### PHASE 2 — DATA STORAGE (SQL Layer)
+After the initial load:
+- Create a PostgreSQL table to store the raw Online Retail dataset.
+- Establish a schema that includes fields like:
+  - InvoiceNo
+  - StockCode
+  - Description
+  - Quantity
+  - InvoiceDate
+  - UnitPrice
+  - CustomerID
+  - Country
+- Load the raw data into the SQL database using SQLAlchemy.
+- Confirm table creation, data types, and row counts.
 
-This Python script handles the data storage phase, loading raw retail data into a SQL database:
+---
 
-### Purpose
-- Load raw transaction data from an Excel file into a PostgreSQL database
-- Serve as the data persistence layer in the data pipeline
+### PHASE 3 — DATA PREPARATION (CLEANING & TRANSFORMATION)
+This is the most critical part. You must clean the data as follows:
 
-### Key Components
+#### 1. Quantity Validation
+- Any quantity below 1 is invalid (returns, errors).
+- Exclude or filter out all transactions with negative or zero quantity.
 
-#### 1. Imports & Setup
+#### 2. Unit Price Validation
+- Unit prices cannot be negative.
+- Remove or correct all rows with UnitPrice < 0.
+
+#### 3. Additional Cleaning
+- Remove invoice cancellations (InvoiceNo beginning with "C").
+- Drop rows where CustomerID is missing.
+- Remove duplicate records.
+- Create new fields:
+  - Revenue = Quantity × UnitPrice
+  - Month, Year, Day extracted from InvoiceDate
+
+#### 4. Store a "cleaned" version
+- Load the cleaned dataset into a new SQL table, e.g., `online_retail_clean`.
+
+---
+
+### PHASE 4 — DATA ANALYSIS (IN PYTHON ONLY)
+Perform analytical steps to prepare insights for leadership:
+
+#### 1. Time Series (2011 Revenue by Month)
+- Filter data for Year = 2011
+- Group by month and calculate revenue totals
+- Identify seasonal patterns or month-to-month changes
+
+#### 2. Country Performance (Excluding United Kingdom)
+- Rank countries by total revenue
+- Identify the top 10 revenue-generating countries
+- Compute both revenue and quantity sold
+
+#### 3. Top Customers by Revenue
+- Rank all customers by total revenue
+- Identify the top 10 highest-spending customers
+
+#### 4. Global Product Demand
+- Compute total quantity sold per country
+- Remove the United Kingdom
+- Rank countries by demand and highlight high-opportunity markets
+
+---
+
+## FINAL DELIVERABLES
+You are expected to submit:
+- The cleaned dataset stored in SQL
+- The Python scripts for all four phases
+- A short summary of key findings in text form
+- Any supporting CSVs generated during the cleaning and analysis steps
 ```
-import pandas as pd
-from sqlalchemy import create_engine
-from dotenv import load_dotenv
-import os
-```
-
-#### Libraries Used
-- **Pandas**: For reading Excel data
-- **SQLAlchemy**: Database ORM and connection management
-- **python-dotenv**: Secure credential management
-- **os**: Environment variable access
-
-#### 2. Data Loading
-- Reads data from `online_retail.xlsx` into a pandas DataFrame
-- Uses environment variables for secure database connection configuration
-
-#### 3. Database Operations
-- Creates a database engine using connection URL from environment variables
-- Writes the DataFrame to PostgreSQL with:
-  - Table name: `online_retail_data`
-  - Schema: `online_retail`
-  - Behavior: Replace existing table (`if_exists='replace'`)
-  - No index column: `index=False`
-
-#### Workflow
-1. Load environment variables with database credentials
-2. Read Excel data into pandas DataFrame
-3. Establish database connection
-4. Write DataFrame to PostgreSQL table in specified schema
-5. Table is replaced if it already exists
-
-#### Security Features
-- Credentials stored in `.env` file (not hardcoded)
-- Connection string managed via environment variables
-
----
-
-## Phase 3: Data Preparation (Cleaning & Transformation) Summary
-
-### Overview
-This Python script performs data cleaning and transformation on the `online_retail.xlsx` dataset using pandas and SQLAlchemy, then stores the cleaned data in a database.
-
-### Key Operations
-#### 1. Data Loading
-- Import `online_retail.xlsx` into a pandas DataFrame
-
-#### 2. Data Cleaning Steps
-- **Quantity Filtering**: Remove transactions with negative or zero quantities
-- **Price Filtering**: Remove rows with negative UnitPrice
-- **Type Conversion**: Convert 'InvoiceNo' column to string type
-- **Cancellation Removal**: Exclude invoice cancellations (InvoiceNo starting with "C")
-- **Missing Data**: Drop rows with missing CustomerID
-- **Duplicate Removal**: Eliminate duplicate records
-
-#### 3. Feature Engineering
-- **Revenue Calculation**: Create new Revenue column (Quantity × UnitPrice)
-- **Date Components Extraction**: Create Month, Year, and Day columns from InvoiceDate
-
-#### 4. Data Storage
-- Load database URL from environment variables
-- Store cleaned data as `clean_online_retail_data` table in PostgreSQL database
-- Uses `if_exists='replace'` to overwrite existing table
-- Stores in `online_retail` schema
-
-### Libraries Used
-- **pandas** - Data manipulation
-- **sqlalchemy** - Database connection
-- **dotenv & os** - Environment variable management
-
-### Output
-- Cleaned DataFrame (`dropped_duplicates`)
-- Persisted cleaned data to PostgreSQL database table
-
----
-
-## Phase 4: Data Analysis Summary
-
-### Overview
-This Python script performs sales data analysis using a prepared dataset imported from a `data_preparation` module.
-
-### Analysis Sections
-#### 1. 2011 Monthly Revenue Analysis
-- Filters data for year 2011 only
-- Groups by month and calculates total revenue
-- Sorts months by revenue in descending order
-- **Purpose**: Identify seasonal patterns and month-to-month changes
-
-#### 2. Country Performance Analysis (Excluding UK)
-- Excludes United Kingdom from analysis
-- Ranks countries by:
-  - Total revenue (top 10 highlighted)
-  - Total quantity sold (top 10 highlighted)
-- Provides insights into international market performance
-
-#### 3. Customer Analysis
-- Ranks all customers by total revenue spent
-- Identifies top 10 highest-spending customers
-- Helps identify valuable customer segments
-
-#### 4. Global Product Demand Analysis
-- Computes total quantity sold per country
-- Excludes United Kingdom
-- Identifies top 10 "high-opportunity markets" based on quantity demanded
-- **Purpose**: Highlight markets with highest demand for expansion opportunities
-
-### Key Operations
-- **Grouping**: Extensive use of `groupby()` operations
-- **Aggregation**: `sum()` for revenue and quantity calculations
-- **Filtering**: Multiple filters applied for year and country exclusions
-- **Sorting**: Results consistently sorted in descending order
-- **Top-N Analysis**: Frequent use of `.head(10)` to highlight top performers
-
-### Data Structure
-The analysis assumes the dataset contains these columns:
-- `Year`, `Month`, `Revenue`, `Quantity`, `Country`, `CustomerID`
-
-### Business Insights Generated
-- Monthly revenue trends for 2011
-- Country rankings for revenue and quantity (international focus)
-- Customer value segmentation
-- Market opportunity identification based on demand
